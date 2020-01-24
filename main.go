@@ -14,6 +14,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -24,6 +25,10 @@ import (
 var (
 	flagHost   = flag.String("host", "", "Host name to update DNS record for")
 	flagDomain = flag.String("domain", "", "Domain name to update DNS record for")
+	flagDryRun = flag.Bool("dryrun", false, "Do not actually update the DNS record")
+	flagIface  = flag.String("i", "", "If specified, use the primary IP address of this network interface, even if not routable")
+	flagV6     = flag.Bool("6", false, "Force IPv6")
+	flagV4     = flag.Bool("4", false, "Force IPv4")
 )
 
 func updateAddress(ip net.IP, name, domain string) error {
@@ -109,6 +114,48 @@ func getExternalAddress() (net.IP, error) {
 	return ip, nil
 }
 
+func getInternalAddress(ifname string, v6 bool) (net.IP, error) {
+	iface, err := net.InterfaceByName(ifname)
+	if err != nil {
+		return nil, err
+	}
+	addrs, err := iface.Addrs()
+	if err != nil {
+		return nil, err
+	}
+	if len(addrs) == 0 {
+		return nil, fmt.Errorf("no address found for interface %s", ifname)
+	}
+	for _, addr := range addrs {
+		fields := strings.Split(addr.String(), "/")
+		if len(fields) == 0 {
+			return nil, fmt.Errorf("empty address %s", addr.String())
+		}
+		ip := net.ParseIP(fields[0])
+		if ip == nil {
+			return nil, fmt.Errorf("failed to parse IP address %s", fields[0])
+		}
+		if v6 {
+			// want v6
+			if ip.To16() != nil && ip.To4() == nil {
+				// got v6
+				return ip, nil
+			}
+			// got v4
+			continue
+		} else {
+			// want v4
+			if ip.To16() != nil && ip.To4() != nil {
+				// got v4
+				return ip, nil
+			}
+			// got v6
+			continue
+		}
+	}
+	return nil, fmt.Errorf("no adddress found for interface %s", ifname)
+}
+
 func main() {
 	flag.Parse()
 	if *flagHost == "" {
@@ -117,12 +164,31 @@ func main() {
 	if *flagDomain == "" {
 		log.Fatalf("Domain name flag not specified")
 	}
-
-	addr, err := getExternalAddress()
-	if err != nil {
-		log.Fatalf("Failed to get external IP address: %v", err)
+	if *flagV6 && *flagV4 {
+		log.Fatalf("Only one of -6 and -4 can be specified")
+	}
+	v6 := true
+	if *flagV4 {
+		v6 = false
 	}
 
+	var (
+		addr net.IP
+		err  error
+	)
+	if *flagIface != "" {
+		addr, err = getInternalAddress(*flagIface, v6)
+	} else {
+		addr, err = getExternalAddress()
+	}
+	if err != nil {
+		log.Fatalf("Failed to get IP address: %v", err)
+	}
+	if *flagDryRun {
+		log.Printf("Dry-run, not updating the DNS record")
+		log.Printf("The record update request would be %s.%s -> %s", *flagHost, *flagDomain, addr.String())
+		os.Exit(0)
+	}
 	if err := updateAddress(addr, *flagHost, *flagDomain); err != nil {
 		log.Fatalf("Failed to update DNS record %s.%s with IP address %s: %v", *flagHost, *flagDomain, addr, err)
 	}
