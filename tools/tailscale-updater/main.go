@@ -12,12 +12,6 @@ import (
 	"tailscale.com/ipn/ipnstate"
 )
 
-// toDNSName modifies a string to make it suitable for DNS names (e.g. convert
-// spaces into dashes).
-func toDNSName(s string) string {
-	return strings.ToLower(strings.ReplaceAll(s, " ", "-"))
-}
-
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s <domain name>", os.Args[0])
@@ -41,18 +35,21 @@ func main() {
 		log.Fatalf("Failed to parse tailscale status output: %v", err)
 	}
 
-	// DANGER ZONE: the host names are modified to be valid DNS labels (e.g.
-	// spaces to dashes) so if two hosts generate the same label, the latter
-	// will override the former!
-	// TODO detect this, and append a counter, e.g. -1, -2 etc.
-
 	// local config first
 	if status.Self == nil {
 		log.Fatalf("Self config is nil")
 	}
-	fmt.Printf("-4 -host '%s' -domain '%s' -ip '%s'\n", toDNSName(status.Self.HostName), domain, status.Self.TailAddr)
+	suffix := "." + status.MagicDNSSuffix
+	if !strings.HasSuffix(suffix, ".") {
+		suffix += "."
+	}
+	fmt.Printf("-4 -host '%s' -domain '%s' -ip '%s'\n", strings.TrimSuffix(status.Self.DNSName, suffix), domain, status.Self.TailAddr)
 	// then the peers
 	for _, peer := range status.Peer {
-		fmt.Printf("-4 -host '%s' -domain '%s' -ip '%s'\n", toDNSName(peer.HostName), domain, peer.TailAddr)
+		if peer.DNSName == "" {
+			log.Printf("Warning: skipping peer '%s' with empty DNS name", peer.HostName)
+			continue
+		}
+		fmt.Printf("-4 -host '%s' -domain '%s' -ip '%s'\n", strings.TrimSuffix(peer.DNSName, suffix), domain, peer.TailAddr)
 	}
 }
