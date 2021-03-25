@@ -5,5 +5,5 @@ update the IP addresses of all your tailscale devices into Route53.
 
 Example:
 ```
-$ ./tailscale-updater | xargs -L1 -r dyndns-aws
+$ ./tailscale-updater <your domain name> | xargs -L1 -r dyndns-aws
 ```
