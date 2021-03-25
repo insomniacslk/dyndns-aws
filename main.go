@@ -26,9 +26,10 @@ var (
 	flagHost   = flag.String("host", "", "Host name to update DNS record for")
 	flagDomain = flag.String("domain", "", "Domain name to update DNS record for")
 	flagDryRun = flag.Bool("dryrun", false, "Do not actually update the DNS record")
-	flagIface  = flag.String("i", "", "If specified, use the primary IP address of this network interface, even if not routable")
+	flagIface  = flag.String("iface", "", "If specified, use the primary IP address of this network interface, even if not routable")
 	flagV6     = flag.Bool("6", false, "Force IPv6")
 	flagV4     = flag.Bool("4", false, "Force IPv4")
+	flagIP     = flag.String("ip", "", "Force a custom IP address instead of a NIC's IP address")
 )
 
 func updateAddress(ip net.IP, name, domain string) error {
@@ -176,7 +177,15 @@ func main() {
 		addr net.IP
 		err  error
 	)
-	if *flagIface != "" {
+	if *flagIP != "" && *flagIface != "" {
+		log.Fatal("Cannot specify -iface and -ip together")
+	}
+	if *flagIP != "" {
+		addr = net.ParseIP(*flagIP)
+		if addr == nil {
+			log.Fatalf("Failed to parse IP address '%s'", *flagIP)
+		}
+	} else if *flagIface != "" {
 		addr, err = getInternalAddress(*flagIface, v6)
 	} else {
 		addr, err = getExternalAddress()

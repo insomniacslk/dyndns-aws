@@ -11,12 +11,20 @@ https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html .
 ## Usage
 
 ```
-$ dyndns-aws -h
-Usage of dyndns-aws:
+$ ./dyndns-aws -h
+Usage of ./dyndns-aws:
+  -4	Force IPv4
+  -6	Force IPv6
   -domain string
     	Domain name to update DNS record for
+  -dryrun
+    	Do not actually update the DNS record
   -host string
     	Host name to update DNS record for
+  -iface string
+    	If specified, use the primary IP address of this network interface, even if not routable
+  -ip string
+    	Force a custom IP address instead of a NIC's IP address
 ```
 
 For example:
