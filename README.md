@@ -5,6 +5,8 @@ of the host running it, similarly to a dyndns updater.
 
 The external IP address is obtained using the WhatIsMyIP.com API.
 
+If you use [tailscale](https://tailscale.com), see [tools/tailscale-updater](tools/tailscale-updater) to update your DNS records. This assumes you are using your own DNS servers instead of MagicDNS, more information at https://tailscale.com/kb/1054/dns .
+
 The Route53 credentials are read from `~/.aws/credentials` as documented at
 https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html .
 
