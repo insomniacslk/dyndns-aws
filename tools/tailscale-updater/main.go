@@ -1,38 +1,65 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
+	"net"
+	"net/http"
 	"os"
-	"os/exec"
 	"strings"
 
 	"tailscale.com/ipn/ipnstate"
 )
 
+var (
+	flagTailscaledUnixSocket = flag.String("u", "/run/tailscale/tailscaled.sock", "Path to tailscaled's UNIX socket")
+	flagTailscaleHTTPStatus  = flag.String("s", "http://localhost/localapi/v0/status", "Tailscale's LocalAPI status URL")
+)
+
+func getStatus(unixSocket, statusURL string) (*ipnstate.Status, error) {
+	// Using Tailscale's LocalAPI to get status information. This is obviously
+	// better than shelling out to `tailscale status`. See
+	// https://github.com/tailscale/tailscale/blob/main/ipn/localapi/localapi.go
+	client := http.Client{
+		Transport: &http.Transport{
+			DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
+				return net.Dial("unix", *flagTailscaledUnixSocket)
+			},
+		},
+	}
+	resp, err := client.Get(*flagTailscaleHTTPStatus)
+	if err != nil {
+		return nil, fmt.Errorf("HTTP GET to %s failed: %w", statusURL, err)
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read HTTP response body: %w", err)
+	}
+	var status ipnstate.Status
+	if err := json.Unmarshal(data, &status); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal Tailscale LocalAPI Status response: %w", err)
+	}
+	return &status, nil
+}
+
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s <domain name>", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s <domain name>\n", os.Args[0])
+		flag.PrintDefaults()
 	}
 	flag.Parse()
 	domain := flag.Arg(0)
 	if domain == "" {
 		log.Fatalf("no domain specified")
 	}
-
-	// HORRORS AHEAD. I am shelling out to `tailscale` because I am confused by
-	// the tailscale.com API. It seems that tailscale.com/client/tailscale is
-	// out of sync from github.com/tailscale/tailscale/client/tailscale . The
-	// latter contains a Status method, the former doesn't. So for now shellout.
-	out, err := exec.Command("tailscale", "status", "-json").Output()
+	status, err := getStatus(*flagTailscaledUnixSocket, *flagTailscaleHTTPStatus)
 	if err != nil {
-		log.Fatalf("Failed to run tailscale executable: %v", err)
-	}
-	var status ipnstate.Status
-	if err := json.Unmarshal(out, &status); err != nil {
-		log.Fatalf("Failed to parse tailscale status output: %v", err)
+		log.Fatalf("Failed to get Tailscale status: %v", err)
 	}
 
 	// local config first
