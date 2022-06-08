@@ -70,13 +70,13 @@ func main() {
 	if !strings.HasSuffix(suffix, ".") {
 		suffix += "."
 	}
-	fmt.Printf("-4 -host '%s' -domain '%s' -ip '%s'\n", strings.TrimSuffix(status.Self.DNSName, suffix), domain, status.Self.TailAddr)
+	fmt.Printf("-4 -host '%s' -domain '%s' -ip '%s'\n", strings.TrimSuffix(status.Self.DNSName, suffix), domain, status.Self.TailscaleIPs[0])
 	// then the peers
 	for _, peer := range status.Peer {
 		if peer.DNSName == "" {
 			log.Printf("Warning: skipping peer '%s' with empty DNS name", peer.HostName)
 			continue
 		}
-		fmt.Printf("-4 -host '%s' -domain '%s' -ip '%s'\n", strings.TrimSuffix(peer.DNSName, suffix), domain, peer.TailAddr)
+		fmt.Printf("-4 -host '%s' -domain '%s' -ip '%s'\n", strings.TrimSuffix(peer.DNSName, suffix), domain, peer.TailscaleIPs[0])
 	}
 }
