@@ -10,12 +10,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
-	"net/http"
 	"os"
 	"strings"
+
+	"github.com/insomniacslk/ipapi"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -98,19 +98,13 @@ func updateAddress(ip net.IP, name, domain string) error {
 }
 
 func getExternalAddress() (net.IP, error) {
-	// you can also use ipv4bot and ipv6bot for v4-only and v6-only
-	req, err := http.Get("https://bot.whatismyipaddress.com")
+	resp, err := ipapi.Get(nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	defer req.Body.Close()
-	addr, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		return nil, err
-	}
-	ip := net.ParseIP(string(addr))
+	ip := net.ParseIP(resp.Query)
 	if ip == nil {
-		return nil, fmt.Errorf("Failed to parse ip '%s'", addr)
+		return nil, fmt.Errorf("Failed to parse ip '%s'", resp.Query)
 	}
 	return ip, nil
 }
