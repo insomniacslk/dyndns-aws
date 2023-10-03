@@ -5,9 +5,9 @@ go 1.21
 toolchain go1.21.0
 
 require (
-	github.com/aws/aws-sdk-go v1.45.8
+	github.com/aws/aws-sdk-go v1.45.20
 	github.com/insomniacslk/ipapi v0.0.0-20220721094550-f4429d9166a0
-	tailscale.com v1.48.2
+	tailscale.com v1.50.1
 )
 
 require (
@@ -305,7 +305,7 @@ require (
 	github.com/danieljoos/wincred v1.1.2 // indirect
 	github.com/dave/jennifer v1.6.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dblohm7/wingoes v0.0.0-20230803162905-5c6286bb8c6e // indirect
+	github.com/dblohm7/wingoes v0.0.0-20230821191801-fc76608aecf0 // indirect
 	github.com/denis-tingaikin/go-header v0.4.3 // indirect
 	github.com/denis-tingajkin/go-header v0.4.2 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
@@ -365,7 +365,7 @@ require (
 	github.com/go-git/go-git/v5 v5.7.0 // indirect
 	github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200222043503-6f7a984d4dc4 // indirect
-	github.com/go-json-experiment/json v0.0.0-20230321051131-ccbac49a6929 // indirect
+	github.com/go-json-experiment/json v0.0.0-20230908182459-f320be06fe37 // indirect
 	github.com/go-kit/kit v0.9.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-latex/latex v0.0.0-20210823091927-c0d11ff05a81 // indirect
@@ -402,7 +402,7 @@ require (
 	github.com/gobwas/pool v0.2.0 // indirect
 	github.com/gobwas/ws v1.0.2 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
-	github.com/godbus/dbus/v5 v5.1.0 // indirect
+	github.com/godbus/dbus/v5 v5.1.1-0.20230522191255-76236955d466 // indirect
 	github.com/gofrs/flock v0.8.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/gojuno/minimock/v3 v3.0.8 // indirect
@@ -757,7 +757,7 @@ require (
 	github.com/tailscale/hujson v0.0.0-20221223112325-20486734a56a // indirect
 	github.com/tailscale/mkctr v0.0.0-20220601142259-c0b937af2e89 // indirect
 	github.com/tailscale/netlink v1.1.1-0.20211101221916-cabfb018fe85 // indirect
-	github.com/tailscale/wireguard-go v0.0.0-20230710185534-bb2c8f22eccf // indirect
+	github.com/tailscale/wireguard-go v0.0.0-20230824215414-93bd5cbf7fd8 // indirect
 	github.com/tc-hib/winres v0.2.0 // indirect
 	github.com/tcnksm/go-httpstat v0.2.0 // indirect
 	github.com/tdakkota/asciicheck v0.2.0 // indirect
