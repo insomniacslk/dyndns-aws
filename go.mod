@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.21.0
 
 require (
-	github.com/aws/aws-sdk-go v1.49.17
+	github.com/aws/aws-sdk-go v1.49.21
 	github.com/insomniacslk/ipapi v0.0.0-20220721094550-f4429d9166a0
 	tailscale.com v1.56.1
 )
